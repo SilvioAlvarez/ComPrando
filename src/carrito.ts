@@ -1,40 +1,104 @@
-let producto = document.getElementById("producto");
-let precio = document.getElementById("precio");
-let agregar = document.getElementById("btn-agregar");
-let calcular = document.getElementById("btn-calcular");
-let lista = document.getElementById("lista");
-let total = document.getElementById("total");
-let productos: string[] = [];
-let precios: number []= [];
-let suma: number = 0;
-let vaciar = document.getElementById("vaciar");
-//metodo push para arreglos
+let stockProductos = [
+  {id : 1, nombre : "Cocina Aurora", cantidad : 1, precio : 110000, img : `./imagenes/cocina1.webp`},
+  {id : 2, nombre : "Cocina Volcan", cantidad : 1, precio : 125000, img : `./imagenes/cocina2.webp`},
+  {id : 3, nombre : "Heladera Patrick", cantidad : 1, precio : 155000, img : `./imagenes/heladera1.webp`},
+  {id : 4, nombre : "Heladera Gafa", cantidad : 1, precio : 165000, img : `./imagenes/heladera2.webp`},
+  {id : 5, nombre : "Bicicleta Olmo", cantidad : 1, precio : 45000, img : `./imagenes/bicicleta1.webp`},
+  {id : 6, nombre : "Bicicleta Anasi", cantidad : 1, precio : 55000, img : `./imagenes/bicicleta2.webp`},
+  {id : 7, nombre : "Set Herramientas", cantidad : 1, precio : 11000, img : `./imagenes/herramientas1.webp`},
+  {id : 8, nombre : "Herramienta", cantidad : 1, precio : 9000, img : `./imagenes/herramientas2.webp`},
+]
+const contenedorProductos = document.getElementById('contenedor-productos')
 
-const agregarAlCarrito = () => {
-    productos.push(producto.value);
-    precios.push(Number(precio.value));
+//TERCER PASO
 
-  lista?.innerHTML += `<li>${producto.value} : $${precio.value}</li>`;
+const contenedorCarrito = document.getElementById('carrito-contenedor')
+//SEXTO PASO
+const botonVaciar = document.getElementById('vaciar-carrito')
+//SEXTIMO PASO, MODIFICAR LOS CONTADORES
+const contadorCarrito = document.getElementById('contadorCarrito')
 
-    producto.value = "";
-    precio.value = "";
-}
-const calcularTotal = () => {
-suma = 0;
-    for (let i: number=0; i < precios.length; i++){
-      suma += Number(precios[i]);
-      
+//OCTAVO PASO
+const cantidad = document.getElementById('cantidad')
+const precioTotal = document.getElementById('precioTotal')
+const cantidadTotal = document.getElementById('cantidadTotal')
+
+let carrito = []
+
+botonVaciar.addEventListener('click', () => {
+    carrito.length = 0
+    actualizarCarrito()
+})
+
+
+stockProductos.forEach((producto) => {
+    const div = document.createElement('div')
+    div.classList.add('producto')
+    div.innerHTML = `
+    <img src=${producto.img} alt= "">
+    <h3>${producto.nombre}</h3>
+    <p class="precioProducto">Precio:$ ${producto.precio}</p>
+    <button id="agregar${producto.id}" class="boton-agregar">Agregar <i class="fas fa-shopping-cart"></i></button>
+    `
+    contenedorProductos.appendChild(div)
+
+    //2 - SEGUNDO PASO, LUEGO DE QUE INSERTEMOS EL HTML EN EL DOM:
+    const boton = document.getElementById(`agregar${producto.id}`)
+    //Por cada elemento de mi array, creo un div, lo cuelgo, le pongo un id particular, una vez colgado
+    //le hago un get element by id (el de agregar) Obtengo el elemento y a dicho elemento le agregamos
+    //el add event listener
+
+    boton.addEventListener('click', () => {
+        //esta funcion ejecuta el agregar el carrito con la id del producto
+        agregarAlCarrito(producto.id)
+        //
+    })
+})
+
+// 1- PRIMER PASO
+
+//AGREGAR AL CARRITO
+const agregarAlCarrito = (prodId) => {
+
+    //PARA AUMENTAR LA CANTIDAD Y QUE NO SE REPITA
+    const existe = carrito.some (prod => prod.id === prodId) //comprobar si el elemento ya existe en el carro
+
+    if (existe){ //SI YA ESTÁ EN EL CARRITO, ACTUALIZAMOS LA CANTIDAD
+        const prod = carrito.map (prod => { //creamos un nuevo arreglo e iteramos sobre cada curso y cuando
+            // map encuentre cual es el q igual al que está agregado, le suma la cantidad
+            if (prod.id === prodId){
+                prod.cantidad++
+            }
+        })
+    } else { //EN CASO DE QUE NO ESTÉ, AGREGAMOS EL CURSO AL CARRITO
+        const item = stockProductos.find((prod) => prod.id === prodId)//Trabajamos con las ID
+        //Una vez obtenida la ID, lo que haremos es hacerle un push para agregarlo al carrito
+        carrito.push(item)
     }
-           total?.innerHTML = suma; 
+    //Va a buscar el item, agregarlo al carrito y llama a la funcion actualizarCarrito, que recorre
+    //el carrito y se ve.
+    actualizarCarrito() //LLAMAMOS A LA FUNCION QUE CREAMOS EN EL TERCER PASO. CADA VEZ Q SE 
+    //MODIFICA EL CARRITO
+}
+const actualizarCarrito = () => {
+    //4- CUARTO PASO
+    //LOS APPENDS SE VAN ACUMULANDO CON LO QE HABIA ANTES
+    contenedorCarrito.innerHTML = ""
+ carrito.forEach((prod) => {
+        const div = document.createElement('div')
+        div.className = ('productoEnCarrito')
+        div.innerHTML = `
+        <p>${prod.nombre}</p>
+        <p>Precio:$${prod.precio}</p>
+        <p>Cantidad: <span id="cantidad">${prod.cantidad}</span></p>
+        <button onclick="eliminarDelCarrito(${prod.id})" class="boton-eliminar"><i class="fas fa-trash-alt"></i></button>
+        `
+
+        contenedorCarrito.appendChild(div)
+        
+       localStorage.setItem('carrito', JSON.stringify(carrito))
+
+    })
+      precioTotal.innerText = carrito.reduce((acc, prod) => acc + prod.cantidad * prod.precio, 0)
 
 }
-const vaciarLista = () => {
-  lista?.innerHTML = "";
-  total?.innerHTML = "";
-  }
-agregar?.addEventListener("click", agregarAlCarrito);
-calcular?.addEventListener("click", calcularTotal);
-vaciar?.addEventListener("click", vaciarLista);
-
-
-
